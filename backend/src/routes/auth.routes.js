@@ -2,9 +2,10 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 
+const authMiddleware = require("../middleware/auth");
 // Signup route
 router.post("/signup", async (req, res) => {
   try {
@@ -49,5 +50,75 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Export router (ALWAYS at the bottom)
+
+// Login route
+// Login route
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required"
+      });
+    }
+
+    // 2. Find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    // 3. Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    // 4. Success
+    // 4. Generate JWT token
+const token = jwt.sign(
+  { userId: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "1h" }
+);
+
+// 5. Send token + user info
+res.status(200).json({
+  message: "Login successful",
+  token,
+  user: {
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role
+  }
+});
+
+
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+
+
+// Get current logged-in user
+router.get("/me", authMiddleware, (req, res) => {
+  res.status(200).json({
+    user: req.user
+  });
+});
+
+
+// Export router (ONLY ONCE, AT THE BOTTOM)
 module.exports = router;
