@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <h2>Admin Dashboard</h2>
+  <button onclick="logout()">Logout</button>
+
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+  </table>
+
+  <br>
+  <button onclick="prevPage()">Previous</button>
+  <span id="pageInfo"></span>
+  <button onclick="nextPage()">Next</button>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
