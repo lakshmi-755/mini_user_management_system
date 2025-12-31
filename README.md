@@ -5,7 +5,7 @@ Project Overview
 This project is a Mini User Management System that implements user authentication and role-based access control.
 Users can sign up, log in, view their dashboard, and log out.
 Admin users can manage users by viewing all accounts and activating or deactivating them.
-
+ PROJECT -URL  :  https://mini-user-management-system-lakshmi.netlify.app/
 Tech Stack
 Frontend
 
