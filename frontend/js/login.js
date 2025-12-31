@@ -1,59 +1,45 @@
 
+const BASE_URL = "https://mini-user-management-system-1-gwj1.onrender.com";
+
 async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  const response = await fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
+  if (!email || !password) {
+    document.getElementById("message").innerText = "All fields are required";
+    return;
+  }
 
-  const data = await response.json();
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-  if (response.ok) {
-    // 🔐 STORE TOKEN
+    const data = await response.json();
+
+    if (!response.ok) {
+      document.getElementById("message").innerText =
+        data.message || "Login failed";
+      return;
+    }
+
+    // 🔐 Save JWT token
     localStorage.setItem("token", data.token);
 
-    // Go to dashboard
+    // ✅ Redirect to dashboard
     window.location.href = "dashboard.html";
-  } else {
-    document.getElementById("message").innerText = data.message;
+
+  } catch (error) {
+    document.getElementById("message").innerText =
+      "Server error. Please try again later.";
   }
 }
-async function logout() {
-  const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/auth/logout", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-    }
-  });   
-    const data = await response.json();
-    if (response.ok) {
-        // 🗑️ DELETE TOKEN
-        localStorage.removeItem("token");
-        // Go to login page
-        window.location.href = "login.html";
-    } else {
-        document.getElementById("message").innerText = data.message;
-    }
-}
-async function getCurrentUser() {
-  const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/auth/me", {
-    method: "GET",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`  
-    }
-    });
-    const data = await response.json();
-    if (response.ok) {
-        document.getElementById("welcomeMessage").innerText = `Welcome, ${data.user.fullName}`;
-    } else {
-        document.getElementById("message").innerText = data.message;
-    }
-}
-getCurrentUser();
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("password").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    login();
+  }
+});

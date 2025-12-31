@@ -1,23 +1,19 @@
 
 let currentPage = 1;
 const limit = 5;
+const BASE_URL = "https://mini-user-management-system-1-gwj1.onrender.com";
 
+// 🔹 Load users (Admin only)
 async function loadUsers() {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    window.location.href = "login.html";
+    window.location.href = "index.html";
     return;
   }
 
-  if (data.user.role !== "admin") {
-  alert("Access denied");
-  window.location.href = "dashboard.html";
-}
-
-
   const response = await fetch(
-    `http://localhost:5000/api/admin/users?page=${currentPage}&limit=${limit}`,
+    `${BASE_URL}/api/admin/users?page=${currentPage}&limit=${limit}`,
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -33,7 +29,8 @@ async function loadUsers() {
     return;
   }
 
-  document.getElementById("userTable").innerHTML = "";
+  const tableBody = document.getElementById("userTable");
+  tableBody.innerHTML = "";
 
   data.users.forEach(user => {
     const row = document.createElement("tr");
@@ -52,16 +49,17 @@ async function loadUsers() {
       </td>
     `;
 
-    document.getElementById("userTable").appendChild(row);
+    tableBody.appendChild(row);
   });
 
   document.getElementById("pageInfo").innerText = `Page ${data.page}`;
 }
 
+// 🔹 Deactivate user
 async function deactivateUser(id) {
   const token = localStorage.getItem("token");
 
-  await fetch(`http://localhost:5000/api/admin/users/${id}/deactivate`, {
+  await fetch(`${BASE_URL}/api/admin/users/${id}/deactivate`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`
@@ -71,10 +69,11 @@ async function deactivateUser(id) {
   loadUsers();
 }
 
+// 🔹 Activate user
 async function activateUser(id) {
   const token = localStorage.getItem("token");
 
-  await fetch(`http://localhost:5000/api/admin/users/${id}/activate`, {
+  await fetch(`${BASE_URL}/api/admin/users/${id}/activate`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`
@@ -84,6 +83,7 @@ async function activateUser(id) {
   loadUsers();
 }
 
+// 🔹 Pagination
 function nextPage() {
   currentPage++;
   loadUsers();
@@ -96,9 +96,35 @@ function prevPage() {
   }
 }
 
+// 🔹 Logout
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 
+// 🔹 Attach button listeners
+document.getElementById("logoutBtn").addEventListener("click", logout);
+document.getElementById("nextBtn").addEventListener("click", nextPage);
+document.getElementById("prevBtn").addEventListener("click", prevPage);
+
+// 🔹 Show logged-in user in navbar
+const token = localStorage.getItem("token");
+
+if (token) {
+  fetch(`${BASE_URL}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("navUser").innerText =
+        `Logged in as: ${data.user.fullName}`;
+
+      // Hide admin link for non-admin users
+      if (data.user.role !== "admin") {
+        document.getElementById("adminLink").style.display = "none";
+      }
+    });
+}
+
+// 🔹 Load users on page load
 loadUsers();

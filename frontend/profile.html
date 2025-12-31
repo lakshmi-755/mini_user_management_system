@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,7 +105,7 @@
     const token = localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     }
 
     // 🔹 GET CURRENT USER
@@ -187,7 +188,7 @@
     // 🔹 LOGOUT
     function logout() {
       localStorage.removeItem("token");
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     }
 
     loadProfile();
