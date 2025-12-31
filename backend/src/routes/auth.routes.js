@@ -111,6 +111,13 @@ res.status(200).json({
   }
 });
 
+// Logout route
+router.post("/logout", (req, res) => {
+  res.status(200).json({
+    message: "Logout successful. Please delete token on client side."
+  });
+});
+
 
 // Get current logged-in user
 router.get("/me", authMiddleware, (req, res) => {

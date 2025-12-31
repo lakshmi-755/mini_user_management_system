@@ -1,33 +1,23 @@
 
-async function loadUser() {
-  const token = localStorage.getItem("token");
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "login.html";
 
-  if (!token) {
-    // Not logged in
-    window.location.href = "login.html";
-    return;
+fetch("http://localhost:5000/api/auth/me", {
+  headers: { Authorization: `Bearer ${token}` }
+})
+.then(res => res.json())
+.then(data => {
+  document.getElementById("welcome").innerText =
+    `Welcome ${data.user.fullName}`;
+
+  // Hide admin link for normal users
+  if (data.user.role !== "admin") {
+    document.getElementById("adminLink").style.display = "none";
   }
-
-  const response = await fetch("http://localhost:5000/api/auth/me", {
-    headers: {
-      Authorization: "Bearer " + token
-    }
-  });
-
-  const data = await response.json();
-
-  if (response.ok) {
-    document.getElementById("userInfo").innerText =
-      `Welcome ${data.user.fullName} (${data.user.email})`;
-  } else {
-    alert("Session expired");
-    logout();
-  }
-}
+});
 
 function logout() {
   localStorage.removeItem("token");
   window.location.href = "login.html";
 }
-
-loadUser();
+document.getElementById("logoutBtn").addEventListener("click", logout);

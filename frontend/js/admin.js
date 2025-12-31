@@ -10,6 +10,12 @@ async function loadUsers() {
     return;
   }
 
+  if (data.user.role !== "admin") {
+  alert("Access denied");
+  window.location.href = "dashboard.html";
+}
+
+
   const response = await fetch(
     `http://localhost:5000/api/admin/users?page=${currentPage}&limit=${limit}`,
     {

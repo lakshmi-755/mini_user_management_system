@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    nav {
+      background: #f2f2f2;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav button {
+      margin-left: 20px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    input {
+      display: block;
+      margin: 8px 0;
+      padding: 6px;
+      width: 300px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .section {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      width: 350px;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+
+    #error {
+      margin-top: 15px;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 🔹 NAVIGATION BAR -->
+  <nav style="background:#f2f2f2;padding:10px;margin-bottom:20px;">
+  <span id="navUser"></span> 
+  <button><a href="dashboard.html">Dashboard</a></button> 
+  <button><a href="profile.html">Profile</a></button> 
+  <button><a href="admin.html" id="adminLink">Admin</a></button> 
+  <button onclick="logout()">Logout</button>
+</nav>
+
+  <h2>User Profile</h2>
+
+  <!-- 🔹 PROFILE INFO -->
+  <div class="section">
+    <h3>Update Profile</h3>
+
+    <input type="text" id="fullName" placeholder="Full Name">
+    <input type="email" id="email" placeholder="Email">
+
+    <button onclick="updateProfile()">Update Profile</button>
+  </div>
+
+  <!-- 🔹 CHANGE PASSWORD -->
+  <div class="section">
+    <h3>Change Password</h3>
+
+    <input type="password" id="oldPassword" placeholder="Old Password">
+    <input type="password" id="newPassword" placeholder="New Password">
+
+    <button onclick="changePassword()">Change Password</button>
+  </div>
+
+  <!-- 🔹 MESSAGE -->
+  <div id="message"></div>
+  <div id="error"></div>
+
+  <!-- 🔹 JS -->
+  <script>
+    const API_URL = "http://localhost:5000";
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "login.html";
+    }
+
+    // 🔹 GET CURRENT USER
+    async function loadProfile() {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Session expired. Login again.");
+        logout();
+        return;
+      }
+
+      document.getElementById("fullName").value = data.user.fullName;
+      document.getElementById("email").value = data.user.email;
+      document.getElementById("userName").innerText =
+        `Logged in as: ${data.user.fullName}`;
+
+      // Hide admin link if not admin
+      if (data.user.role !== "admin") {
+        document.getElementById("adminLink").style.display = "none";
+      }
+    }
+
+    // 🔹 UPDATE PROFILE
+    async function updateProfile() {
+      const fullName = document.getElementById("fullName").value;
+      const email = document.getElementById("email").value;
+
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ fullName, email })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById("message").innerText = data.message;
+        document.getElementById("error").innerText = "";
+      } else {
+        document.getElementById("error").innerText = data.message;
+        document.getElementById("message").innerText = "";
+      }
+    }
+
+    // 🔹 CHANGE PASSWORD
+    async function changePassword() {
+      const oldPassword = document.getElementById("oldPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+
+      const res = await fetch(`${API_URL}/api/users/change-password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById("message").innerText = data.message;
+        document.getElementById("error").innerText = "";
+      } else {
+        document.getElementById("error").innerText = data.message;
+        document.getElementById("message").innerText = "";
+      }
+    }
+
+    // 🔹 LOGOUT
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    loadProfile();
+  </script>
+
+</body>
+</html>
